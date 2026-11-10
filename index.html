@@ -1,0 +1,760 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#06281E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Hablamos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: one narrow column. Settings and topic up top, the conversation in the middle, the mic docked at the bottom where a thumb reaches it. */
+:root {
+  --ground-deep: #06281E;
+  --ground: #0E5A40;
+  --surface: rgba(6, 40, 30, 0.72);
+  --surface-raised: rgba(14, 90, 64, 0.55);
+  --cream: #F7F0DA;
+  --cream-dim: rgba(247, 240, 218, 0.68);
+  --gold: #D9AE3E;
+  --gold-hi: #F6DE96;
+  --gold-lo: #9C7A1F;
+  --line: rgba(217, 174, 62, 0.28);
+  --danger: #F2A88E;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+html, body { min-height: 100%; }
+body {
+  margin: 0;
+  background: radial-gradient(120% 70% at 50% 0%, var(--ground) 0%, var(--ground-deep) 70%) fixed, var(--ground-deep);
+  color: var(--cream);
+  font: 400 16px/1.5 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+.app {
+  max-width: 620px;
+  margin: 0 auto;
+  padding-inline: 16px;
+  padding-block: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+header { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+h1 {
+  font: 600 2.1rem/1 var(--font-display);
+  margin: 0;
+  letter-spacing: -0.01em;
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, var(--gold-lo));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.sub { margin: 4px 0 0; color: var(--cream-dim); font-size: 0.9rem; }
+.focus-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase;
+  border: 1px solid var(--line); color: var(--gold-hi);
+  padding: 4px 8px; border-radius: 999px;
+}
+
+/* Panels */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+details.panel > summary {
+  cursor: pointer; list-style: none;
+  font: 600 1.05rem var(--font-display); color: var(--gold-hi);
+  display: flex; justify-content: space-between; align-items: center;
+  min-height: 28px;
+}
+details.panel > summary::-webkit-details-marker { display: none; }
+details.panel > summary::after { content: "+"; font-family: var(--font-body); color: var(--gold); font-size: 1.3rem; }
+details.panel[open] > summary::after { content: "\2212"; }
+details.panel:not([open]) { gap: 0; }
+
+label.field { display: flex; flex-direction: column; gap: 6px; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--cream-dim); }
+select, textarea, input[type="text"] {
+  font: 400 1rem var(--font-body);
+  color: var(--cream);
+  background: rgba(6, 40, 30, 0.9);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  min-height: 44px;
+  box-sizing: border-box;
+  width: 100%;
+  text-transform: none; letter-spacing: 0;
+}
+textarea { resize: vertical; min-height: 72px; }
+select:focus-visible, textarea:focus-visible, input:focus-visible, button:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--gold-hi); outline-offset: 2px;
+}
+.row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+.row > .grow { flex: 1 1 200px; min-width: 0; }
+
+button { font: 500 0.95rem var(--font-body); cursor: pointer; }
+.btn-gold {
+  min-height: 46px; padding: 0 20px; border-radius: 12px; border: 0;
+  color: var(--ground-deep); font-weight: 600;
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold) 55%, var(--gold-lo));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 2px 10px rgba(0,0,0,0.3);
+}
+.btn-gold:disabled { opacity: 0.5; cursor: default; }
+.btn-ghost {
+  min-height: 40px; padding: 0 14px; border-radius: 10px;
+  background: transparent; color: var(--gold-hi); border: 1px solid var(--line);
+}
+.btn-ghost:hover { border-color: var(--gold); }
+
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.seg button { min-height: 40px; padding: 0 14px; background: transparent; color: var(--cream-dim); border: 0; }
+.seg button[aria-pressed="true"] { background: var(--gold); color: var(--ground-deep); font-weight: 600; }
+
+input[type="range"] { width: 100%; accent-color: var(--gold); min-height: 32px; }
+.rate-val { font-variant-numeric: tabular-nums; color: var(--gold-hi); text-transform: none; }
+.note { font-size: 0.85rem; color: var(--cream-dim); margin: 0; }
+.note b { color: var(--cream); font-weight: 500; }
+
+/* Conversation */
+.log { display: flex; flex-direction: column; gap: 14px; flex: 1; padding-block: 4px 8px; }
+.example-tag {
+  align-self: center; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--gold); border-bottom: 1px solid var(--line); padding-bottom: 2px;
+}
+.msg { display: flex; flex-direction: column; gap: 8px; max-width: 88%; min-width: 0; }
+.msg.them { align-self: flex-start; }
+.msg.me { align-self: flex-end; align-items: flex-end; }
+.bubble {
+  padding: 12px 14px; border-radius: 16px; overflow-wrap: anywhere;
+}
+.them .bubble {
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-bottom-left-radius: 4px;
+  font-size: 1.12rem;
+}
+.me .bubble {
+  background: linear-gradient(180deg, rgba(246,222,150,0.22), rgba(217,174,62,0.16));
+  border: 1px solid rgba(217,174,62,0.45);
+  border-bottom-right-radius: 4px;
+}
+.example .bubble { opacity: 0.78; }
+.tools { display: flex; gap: 6px; flex-wrap: wrap; }
+.tool {
+  min-height: 36px; padding: 0 12px; border-radius: 999px;
+  background: rgba(6,40,30,0.8); color: var(--cream-dim); border: 1px solid var(--line);
+  display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem;
+}
+.tool:hover { color: var(--cream); border-color: var(--gold); }
+.tool svg { width: 14px; height: 14px; fill: currentColor; }
+.tool.has-fix { color: var(--gold-hi); border-color: var(--gold); }
+.tool.has-fix::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--gold); }
+.reveal { font-size: 0.95rem; padding: 10px 12px; border-radius: 12px; border-left: 2px solid var(--gold); background: rgba(6,40,30,0.6); }
+.reveal.fix { border-left-color: var(--gold-hi); }
+.reveal .label { display: block; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); margin-bottom: 2px; }
+.thinking .bubble { display: inline-flex; gap: 5px; align-items: center; min-height: 24px; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); animation: blink 1.2s infinite ease-in-out; }
+.dot:nth-child(2) { animation-delay: 0.15s; } .dot:nth-child(3) { animation-delay: 0.3s; }
+@keyframes blink { 0%, 80%, 100% { opacity: 0.25; } 40% { opacity: 1; } }
+.err { color: var(--danger); font-size: 0.9rem; }
+
+/* Dock */
+.dock {
+  position: sticky; bottom: 0;
+  margin-inline: -16px;
+  padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, rgba(6,40,30,0) 0%, rgba(6,40,30,0.94) 22%, var(--ground-deep) 100%);
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.live { min-height: 1.5em; text-align: center; color: var(--gold-hi); font-style: italic; max-width: 100%; overflow-wrap: anywhere; }
+.live:empty::before { content: attr(data-hint); color: var(--cream-dim); font-style: normal; font-size: 0.9rem; }
+.mic-wrap { position: relative; width: 92px; height: 92px; }
+.mic {
+  position: relative; z-index: 1;
+  width: 92px; height: 92px; border-radius: 50%; border: 0;
+  background: radial-gradient(circle at 35% 28%, var(--gold-hi), var(--gold) 52%, var(--gold-lo) 100%);
+  box-shadow: inset 0 2px 3px rgba(255,255,255,0.55), inset 0 -4px 8px rgba(0,0,0,0.25), 0 6px 20px rgba(0,0,0,0.45);
+  display: grid; place-items: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.mic svg { width: 36px; height: 36px; fill: var(--ground-deep); }
+.mic:disabled { filter: grayscale(0.7); opacity: 0.55; cursor: not-allowed; }
+.ring { position: absolute; inset: 0; border-radius: 50%; border: 3px solid var(--gold); opacity: 0; pointer-events: none; }
+.listening .ring { animation: pulse 1.6s infinite ease-out; }
+.listening .ring.r2 { animation-delay: 0.8s; }
+@keyframes pulse { 0% { transform: scale(1); opacity: 0.9; } 100% { transform: scale(1.65); opacity: 0; } }
+.mic-msg { font-size: 0.85rem; color: var(--danger); text-align: center; max-width: 34ch; margin: 0; }
+.type-row { display: flex; gap: 8px; width: 100%; }
+.type-row input { flex: 1; min-width: 0; }
+.type-row button { min-height: 44px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .listening .ring { animation: none; opacity: 1; transform: scale(1.12); }
+  .listening .ring.r2 { display: none; }
+  .dot { animation: none; opacity: 0.8; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <div>
+      <h1>Hablamos</h1>
+      <p class="sub">Tap the mic, say it in Spanish, keep going.</p>
+    </div>
+    <div class="focus-chips" aria-label="Current focus">
+      <span class="chip">ser / estar</span><span class="chip">números</span><span class="chip">cansado · feliz</span>
+    </div>
+  </header>
+
+  <section class="panel" aria-label="Topic">
+    <div class="row">
+      <label class="field grow" for="topic">Topic
+        <select id="topic">
+          <option value="free">Free chat</option>
+          <option value="feelings">Feelings &amp; states (estar)</option>
+          <option value="numbers">Numbers</option>
+          <option value="colors">Colors</option>
+          <option value="animals">Animals</option>
+          <option value="household">Household</option>
+          <option value="food">Ordering food</option>
+          <option value="intro">Introductions</option>
+        </select>
+      </label>
+      <button class="btn-gold" id="startBtn" type="button">Start</button>
+    </div>
+    <label class="field" for="vocab">Words to practice <span style="text-transform:none;letter-spacing:0">(paste from your tracker)</span>
+      <textarea id="vocab" placeholder="cansado, nervioso, la cocina, veinte, tengo hambre"></textarea>
+    </label>
+  </section>
+
+  <details class="panel" id="voicePanel">
+    <summary>Voice &amp; speech</summary>
+    <div class="row">
+      <div class="field" style="gap:6px">Accent
+        <div class="seg" role="group" aria-label="Accent">
+          <button type="button" id="locMX" data-loc="es-MX">es-MX</button>
+          <button type="button" id="locES" data-loc="es-ES">es-ES</button>
+        </div>
+      </div>
+      <label class="field grow" for="voiceSel">Voice
+        <select id="voiceSel"><option>Loading voices…</option></select>
+      </label>
+    </div>
+    <div class="row">
+      <label class="field grow" for="rate">Speed <span class="rate-val" id="rateVal">0.88</span>
+        <input type="range" id="rate" min="0.6" max="1.1" step="0.02" value="0.88">
+      </label>
+      <button class="btn-ghost" id="testBtn" type="button">Test voice</button>
+    </div>
+    <p class="note"><b>On iPhone:</b> better voices can be downloaded under Settings &gt; Accessibility &gt; Spoken Content &gt; Voices &gt; Spanish. Look for ones marked Enhanced or Premium, then reload this page.</p>
+  </details>
+
+  <main class="log" id="log" aria-live="polite"></main>
+
+  <div class="dock">
+    <div class="live" id="live" data-hint="Tap the mic and speak Spanish"></div>
+    <div class="mic-wrap" id="micWrap">
+      <span class="ring"></span><span class="ring r2"></span>
+      <button class="mic" id="micBtn" type="button" aria-label="Start speaking">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3.5 3.5 0 0 0 3.5-3.5v-6a3.5 3.5 0 1 0-7 0v6A3.5 3.5 0 0 0 12 15Zm6-3.5a1 1 0 1 0-2 0 4 4 0 0 1-8 0 1 1 0 1 0-2 0 6 6 0 0 0 5 5.91V20H9a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2h-2v-2.59A6 6 0 0 0 18 11.5Z"/></svg>
+      </button>
+    </div>
+    <p class="mic-msg" id="micMsg" hidden></p>
+    <div class="type-row" id="lockRow" hidden>
+      <input type="password" id="passBox" placeholder="Passcode" autocomplete="current-password" aria-label="Passcode">
+      <button class="btn-gold" id="passBtn" type="button">Unlock</button>
+    </div>
+    <div class="type-row">
+      <input type="text" id="typeBox" placeholder="Or type in Spanish…" autocomplete="off" enterkeyhint="send">
+      <button class="btn-ghost" id="sendBtn" type="button">Send</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const synth = window.speechSynthesis || null;
+
+  // ---------- Saved settings: window.storage when the host provides it ----------
+  const store = {
+    async get(k) {
+      try { if (window.storage && window.storage.get) { const r = await window.storage.get(k); return r && r.value != null ? r.value : null; } } catch (e) {}
+      try { return window.localStorage.getItem("hablamos:" + k); } catch (e) { return null; }
+    },
+    async set(k, v) {
+      try { if (window.storage && window.storage.set) { await window.storage.set(k, String(v)); return; } } catch (e) {}
+      try { window.localStorage.setItem("hablamos:" + k, String(v)); } catch (e) {}
+    },
+  };
+
+  const state = {
+    locale: "es-MX",
+    voiceName: null,
+    rate: 0.88,
+    pitch: 1.02,
+    turns: [],          // {role, content} sent to Claude
+    busy: false,
+    started: false,
+  };
+
+  const TOPICS = {
+    free: "Free chat about her day and life",
+    feelings: "Feelings and physical/mental states with estar (cansada, feliz, nerviosa, enferma, aburrida, contenta)",
+    numbers: "Numbers: ages, prices, phone numbers, times, counting things",
+    colors: "Colors: clothes, objects around her, favorites",
+    animals: "Animals: pets, favorite animals, describing them",
+    household: "Household: rooms, furniture, chores, objects at home",
+    food: "Ordering food at a restaurant or café, role-play as the server",
+    intro: "Introductions: name, where she is from, what she does, ser for identity",
+  };
+
+  function instructions() {
+    const vocab = $("vocab").value.trim();
+    const dialect = state.locale === "es-ES" ? "Spain (use vosotros forms and Spain vocabulary)" : "Mexico (use ustedes and Mexican vocabulary)";
+    return [
+      "You are a warm, patient Spanish conversation partner for a beginner learner. She speaks to you out loud and her words reach you through speech recognition, so ignore missing accents, punctuation and small transcription glitches. Do not correct those.",
+      "",
+      "ABOUT HER: beginner. Has a tutor on Monday and Wednesday evenings and practices with her boyfriend, a native speaker. Currently working on ser vs. estar, numbers, and physical/mental states (cansado, feliz, nervioso, etc.).",
+      "",
+      "HOW TO TALK:",
+      "- Use simple present-tense Spanish and common vocabulary. Spanish from " + dialect + ".",
+      "- Keep replies to 1-3 short sentences and always end with one simple question to keep her talking.",
+      "- Be warm and encouraging, never condescending.",
+      "- Correct gently: in reply_es, naturally repeat her sentence the right way. In correction, give a short kind note in English explaining it. Only correct one or two mistakes at a time.",
+      "- If she says something in English, gently nudge her to try it in Spanish and give her the phrase.",
+      "- Weave her focus vocabulary (ser vs. estar, numbers, estados como cansada, feliz, nerviosa) in naturally.",
+      "",
+      "CURRENT TOPIC: " + TOPICS[$("topic").value] + ".",
+      vocab ? "WORDS TO PRACTICE (steer the conversation toward these, a few at a time): " + vocab.slice(0, 2000) : "",
+      "",
+      "OUTPUT: answer by calling the reply tool with reply_es, reply_en and correction.",
+      "- correction is null unless she made a mistake or spoke English. Never put praise or 'no mistake' notes there.",
+      "- reply_es is read aloud, so no emoji. When quoting a Spanish phrase, use «guillemets» rather than double quotes.",
+    ].filter((l) => l !== null).join("\n");
+  }
+
+  // ---------- Claude ----------
+  // The API key lives in the server function at /api/chat. The passcode keeps strangers off it.
+  let passcode = "";
+
+  async function askClaude() {
+    const sys = instructions();
+    const turns = state.turns.map((t) => ({ role: t.role, content: t.content }));
+    let res;
+    try {
+      res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-passcode": passcode },
+        body: JSON.stringify({ system: sys, messages: turns }),
+      });
+    } catch (e) {
+      throw { code: "network" };
+    }
+    if (res.status === 401) throw { code: "passcode" };
+    if (res.status === 429) throw { code: "rate_limited" };
+    if (!res.ok) throw { code: "upstream_error" };
+    const data = await res.json();
+    return data.reply || data.text || "";
+  }
+
+  function askForPasscode() {
+    $("lockRow").hidden = false;
+    $("passBox").focus();
+  }
+  $("passBtn").addEventListener("click", () => {
+    const v = $("passBox").value.trim();
+    if (!v) return;
+    passcode = v;
+    store.set("passcode", v);
+    $("passBox").value = "";
+    $("lockRow").hidden = true;
+    showMicMsg("");
+    if (!state.started || state.turns.length === 0) start();
+    else $("typeBox").focus();
+  });
+  $("passBox").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $("passBtn").click(); } });
+
+  function normalizeReply(o) {
+    const fix = o.correction && String(o.correction).trim() && String(o.correction).toLowerCase() !== "null" ? String(o.correction).trim() : null;
+    return { reply_es: String(o.reply_es || "").trim(), reply_en: o.reply_en ? String(o.reply_en).trim() : "", correction: fix };
+  }
+
+  // Pulls the three fields out of JSON that has unescaped quotes inside a value.
+  function salvageFields(t) {
+    const keys = ["reply_es", "reply_en", "correction"];
+    const out = {};
+    keys.forEach((k, i) => {
+      const start = t.search(new RegExp('"' + k + '"\\s*:\\s*'));
+      if (start < 0) return;
+      let rest = t.slice(start).replace(new RegExp('^"' + k + '"\\s*:\\s*'), "");
+      if (/^null\b/.test(rest)) { out[k] = null; return; }
+      if (rest[0] !== '"') return;
+      rest = rest.slice(1);
+      const nextKey = keys.slice(i + 1).map((n) => '"\\s*,\\s*"' + n + '"').concat(['"\\s*}\\s*$']).join("|");
+      const m = rest.match(new RegExp("^([\\s\\S]*?)(?:" + nextKey + ")"));
+      if (m) out[k] = m[1].replace(/\\"/g, '"').replace(/\\n/g, " ");
+    });
+    return out.reply_es ? out : null;
+  }
+
+  function parseReply(raw) {
+    if (raw && typeof raw === "object") return normalizeReply(raw);
+    let t = String(raw || "").trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "");
+    const a = t.indexOf("{"), b = t.lastIndexOf("}");
+    if (a >= 0 && b > a) t = t.slice(a, b + 1);
+    try {
+      return normalizeReply(JSON.parse(t));
+    } catch (e) {
+      const salvaged = salvageFields(t);
+      if (salvaged) return normalizeReply(salvaged);
+      return { reply_es: String(raw || "").trim(), reply_en: "", correction: null };
+    }
+  }
+
+  function errorCopy(e) {
+    const code = e && e.code;
+    if (code === "passcode") return "Enter your passcode below to start talking.";
+    if (code === "rate_limited") return "Too many messages too fast. Wait a moment, then send again.";
+    if (code === "network") return "You're offline. Check your connection and send again.";
+    return "Couldn't reach Claude. Send again in a moment.";
+  }
+
+  // ---------- Conversation UI ----------
+  const log = $("log");
+  const ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l11-6.5a1 1 0 0 0 0-1.72l-11-6.5A1 1 0 0 0 8 5.5Z"/></svg>';
+
+  function scrollDown() { requestAnimationFrame(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })); }
+
+  function addMe(text, example) {
+    const m = document.createElement("div");
+    m.className = "msg me" + (example ? " example" : "");
+    const b = document.createElement("div"); b.className = "bubble"; b.textContent = text;
+    m.append(b); log.append(m); scrollDown();
+  }
+
+  function addThem(r, example) {
+    const m = document.createElement("div");
+    m.className = "msg them" + (example ? " example" : "");
+    const b = document.createElement("div"); b.className = "bubble"; b.lang = state.locale; b.textContent = r.reply_es;
+    const tools = document.createElement("div"); tools.className = "tools";
+    const reveals = document.createElement("div"); reveals.style.cssText = "display:flex;flex-direction:column;gap:8px";
+
+    const mk = (label, html, onClick, extra) => {
+      const t = document.createElement("button"); t.type = "button"; t.className = "tool" + (extra ? " " + extra : "");
+      t.innerHTML = html + "<span>" + label + "</span>"; t.addEventListener("click", onClick); tools.append(t); return t;
+    };
+    mk("Replay", ICON_PLAY, () => speak(r.reply_es, 1));
+    mk("Slow", ICON_PLAY, () => speak(r.reply_es, 0.72));
+
+    const addReveal = (label, text, cls, btnLabel, extra) => {
+      if (!text) return;
+      const box = document.createElement("div"); box.className = "reveal " + cls; box.hidden = true;
+      const l = document.createElement("span"); l.className = "label"; l.textContent = label;
+      box.append(l, document.createTextNode(text));
+      reveals.append(box);
+      const btn = mk(btnLabel, "", () => {
+        box.hidden = !box.hidden;
+        btn.setAttribute("aria-expanded", String(!box.hidden));
+        if (!box.hidden) scrollDown();
+      }, extra);
+      btn.setAttribute("aria-expanded", "false");
+    };
+    addReveal("English", r.reply_en, "en", "English");
+    addReveal("Tip", r.correction, "fix", "Correction", "has-fix");
+
+    m.append(b, tools, reveals); log.append(m); scrollDown();
+    return m;
+  }
+
+  function addThinking() {
+    const m = document.createElement("div"); m.className = "msg them thinking";
+    m.innerHTML = '<div class="bubble" aria-label="Thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
+    log.append(m); scrollDown(); return m;
+  }
+
+  function addError(text) {
+    const p = document.createElement("p"); p.className = "err"; p.textContent = text; log.append(p); scrollDown();
+  }
+
+  function clearExamples() {
+    if (state.started) return;
+    state.started = true;
+    log.innerHTML = "";
+  }
+
+  function setBusy(b) {
+    state.busy = b;
+    $("startBtn").disabled = b;
+    $("sendBtn").disabled = b;
+    if (!micBlocked) $("micBtn").disabled = b;
+  }
+
+  async function runTurn() {
+    setBusy(true);
+    const th = addThinking();
+    try {
+      const raw = await askClaude();
+      th.remove();
+      const r = parseReply(raw);
+      if (!r.reply_es) throw { code: "empty" };
+      state.turns.push({ role: "assistant", content: JSON.stringify(r) });
+      addThem(r);
+      speak(r.reply_es, 1);
+    } catch (e) {
+      th.remove();
+      addError(errorCopy(e));
+      if (e && e.code === "passcode") askForPasscode();
+      // Drop the unanswered user turn so the history stays user/assistant alternating.
+      if (state.turns.length && state.turns[state.turns.length - 1].role === "user") {
+        const last = state.turns.pop();
+        if (!last.kickoff) $("typeBox").value = last.content;
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function sendUser(text) {
+    text = String(text || "").trim();
+    if (!text || state.busy) return;
+    clearExamples();
+    stopSpeaking();
+    addMe(text);
+    state.turns.push({ role: "user", content: text });
+    trimHistory();
+    runTurn();
+  }
+
+  function trimHistory() {
+    // Keep the conversation light; always start on a user turn.
+    while (state.turns.length > 40) state.turns.splice(0, 2);
+  }
+
+  function start() {
+    if (state.busy) return;
+    stopSpeaking();
+    state.started = true;
+    log.innerHTML = "";
+    state.turns = [{ role: "user", kickoff: true, content: "(Start the conversation: a friendly greeting in Spanish and a first simple question about the current topic. I haven't said anything yet, so correction is null.)" }];
+    runTurn();
+  }
+
+  // ---------- Voice ----------
+  let voices = [];
+  const GOOD_NAMES = /(paulina|m[oó]nica|jorge|juan|marisol|google espa[nñ]ol)/i;
+  function scoreVoice(v) {
+    let s = 0;
+    if (/premium/i.test(v.name)) s += 100;
+    if (/enhanced|mejorad/i.test(v.name)) s += 90;
+    if (/natural|neural/i.test(v.name)) s += 80;
+    if (GOOD_NAMES.test(v.name)) s += 60;
+    if (/compact/i.test(v.name)) s -= 40;
+    if (/^(eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley|albert|bad news|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox)/i.test(v.name)) s -= 80;
+    const lang = v.lang.replace("_", "-");
+    if (lang.toLowerCase() === state.locale.toLowerCase()) s += 15;
+    else if (state.locale === "es-MX" && /es-(US|419)/i.test(lang)) s += 10;
+    return s;
+  }
+
+  function loadVoices() {
+    if (!synth) return;
+    const all = synth.getVoices().filter((v) => /^es/i.test(v.lang));
+    if (!all.length) return;
+    voices = all.slice().sort((a, b) => scoreVoice(b) - scoreVoice(a) || a.name.localeCompare(b.name));
+    const sel = $("voiceSel");
+    sel.innerHTML = "";
+    voices.forEach((v) => {
+      const o = document.createElement("option"); o.value = v.name; o.textContent = v.name + " (" + v.lang + ")"; sel.append(o);
+    });
+    const saved = state.voiceName && voices.find((v) => v.name === state.voiceName);
+    sel.value = saved ? saved.name : voices[0].name;
+  }
+
+  function currentVoice() {
+    const name = $("voiceSel").value;
+    return voices.find((v) => v.name === name) || voices[0] || null;
+  }
+
+  function splitSentences(text) {
+    const parts = String(text).match(/[^.!?…]+[.!?…]+["”»)]*|[^.!?…]+$/g) || [text];
+    return parts.map((p) => p.trim()).filter(Boolean);
+  }
+
+  let speakToken = 0;
+  function stopSpeaking() { speakToken++; if (synth) synth.cancel(); }
+
+  function speak(text, rateMul) {
+    if (!synth || !text) return;
+    stopSpeaking();
+    const token = speakToken;
+    const parts = splitSentences(String(text).replace(/[\p{Extended_Pictographic}️‍]/gu, "").replace(/[«»"“”]/g, ""));
+    const v = currentVoice();
+    let i = 0;
+    const next = () => {
+      if (token !== speakToken || i >= parts.length) return;
+      const u = new SpeechSynthesisUtterance(parts[i++]);
+      if (v) u.voice = v;
+      u.lang = v ? v.lang : state.locale;
+      u.rate = Math.max(0.5, state.rate * (rateMul || 1));
+      u.pitch = state.pitch;
+      let done = false;
+      const after = () => { if (done) return; done = true; if (token === speakToken) setTimeout(next, 320); };
+      u.onend = after; u.onerror = after;
+      synth.speak(u);
+    };
+    next();
+  }
+
+  // iOS only lets speech start from a user gesture. Speaking a silent utterance on the first tap unlocks it for later auto-play.
+  let unlocked = false;
+  function unlockSpeech() {
+    if (unlocked || !synth) return;
+    unlocked = true;
+    try { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; synth.speak(u); } catch (e) {}
+  }
+  document.addEventListener("pointerdown", unlockSpeech, { capture: true });
+  document.addEventListener("keydown", unlockSpeech, { capture: true });
+
+  // ---------- Speech recognition ----------
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let rec = null, listening = false, micBlocked = false, recError = null, finalText = "";
+
+  function showMicMsg(text) {
+    const m = $("micMsg"); m.textContent = text; m.hidden = !text;
+  }
+  function blockMic(text) {
+    micBlocked = true;
+    $("micBtn").disabled = true;
+    $("micBtn").setAttribute("aria-label", "Microphone unavailable");
+    $("live").dataset.hint = "Type your Spanish below";
+    showMicMsg(text);
+    $("typeBox").focus();
+  }
+
+  function setListening(on) {
+    listening = on;
+    $("micWrap").classList.toggle("listening", on);
+    $("micBtn").setAttribute("aria-label", on ? "Stop and send" : "Start speaking");
+    $("live").dataset.hint = on ? "Escuchando… tap again when you're done" : "Tap the mic and speak Spanish";
+  }
+
+  function startListening() {
+    if (!SR) { blockMic("Speech recognition isn't available in this browser. Type below instead, or try Chrome or Safari."); return; }
+    stopSpeaking();
+    showMicMsg("");
+    recError = null; finalText = "";
+    $("live").textContent = "";
+    try {
+      rec = new SR();
+      rec.lang = state.locale;
+      rec.interimResults = true;
+      rec.continuous = true;
+      rec.maxAlternatives = 1;
+    } catch (e) { blockMic("Couldn't start the microphone. Type below instead."); return; }
+    rec.onresult = (e) => {
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const r = e.results[i];
+        if (r.isFinal) finalText += r[0].transcript + " "; else interim += r[0].transcript;
+      }
+      $("live").textContent = (finalText + interim).trim();
+    };
+    rec.onerror = (e) => {
+      recError = e.error;
+      if (e.error === "not-allowed" || e.error === "service-not-allowed") blockMic("Microphone access is blocked here. Type your Spanish below instead.");
+      else if (e.error === "audio-capture") blockMic("No microphone found. Type your Spanish below instead.");
+      else if (e.error === "no-speech") showMicMsg("Didn't catch anything. Tap the mic and try again.");
+      else if (e.error === "network") showMicMsg("Speech recognition needs a connection. Try again, or type below.");
+    };
+    rec.onend = () => {
+      setListening(false);
+      const said = $("live").textContent.trim();
+      $("live").textContent = "";
+      rec = null;
+      if (said && !micBlocked) sendUser(said);
+    };
+    try { rec.start(); setListening(true); }
+    catch (e) { blockMic("Couldn't start the microphone. Type below instead."); }
+  }
+
+  $("micBtn").addEventListener("click", () => {
+    if (micBlocked || state.busy) return;
+    if (listening && rec) rec.stop(); else startListening();
+  });
+
+  // ---------- Controls ----------
+  $("startBtn").addEventListener("click", start);
+  $("sendBtn").addEventListener("click", () => { const v = $("typeBox").value; $("typeBox").value = ""; sendUser(v); });
+  $("typeBox").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); $("sendBtn").click(); }
+  });
+
+  function setLocale(loc, save) {
+    state.locale = loc;
+    $("locMX").setAttribute("aria-pressed", String(loc === "es-MX"));
+    $("locES").setAttribute("aria-pressed", String(loc === "es-ES"));
+    if (save) { store.set("locale", loc); state.voiceName = null; loadVoices(); }
+  }
+  $("locMX").addEventListener("click", () => setLocale("es-MX", true));
+  $("locES").addEventListener("click", () => setLocale("es-ES", true));
+
+  $("voiceSel").addEventListener("change", (e) => { state.voiceName = e.target.value; store.set("voice", e.target.value); });
+  $("rate").addEventListener("input", (e) => { state.rate = Number(e.target.value); $("rateVal").textContent = state.rate.toFixed(2); });
+  $("rate").addEventListener("change", (e) => store.set("rate", e.target.value));
+  $("testBtn").addEventListener("click", () => speak("Hola, ¿cómo estás hoy? Yo estoy muy feliz de hablar contigo.", 1));
+
+  let vocabTimer;
+  $("vocab").addEventListener("input", () => { clearTimeout(vocabTimer); vocabTimer = setTimeout(() => store.set("vocab", $("vocab").value), 500); });
+  $("topic").addEventListener("change", (e) => store.set("topic", e.target.value));
+
+  // ---------- Example exchange shown until the first real turn ----------
+  function showExample() {
+    const tag = document.createElement("span"); tag.className = "example-tag"; tag.textContent = "Example. Press Start to begin";
+    log.append(tag);
+    addThem({ reply_es: "¡Hola! Hoy hablamos de cómo estás. ¿Cómo estás hoy?", reply_en: "Hi! Today we're talking about how you are. How are you today?", correction: null }, true);
+    addMe("Yo soy cansada.", true);
+    addThem({ reply_es: "¡Ah, estás cansada! Yo también estoy un poco cansada. ¿Por qué estás cansada?", reply_en: "Ah, you're tired! I'm a little tired too. Why are you tired?", correction: "For how you feel right now, use estar: \"Estoy cansada.\" Ser is for what you are, like \"Soy estudiante.\"" }, true);
+    window.scrollTo(0, 0);
+  }
+
+  // ---------- Boot ----------
+  (async () => {
+    setLocale("es-MX", false);
+    showExample();
+    const [loc, voice, rate, topic, vocab, pass] = await Promise.all(["locale", "voice", "rate", "topic", "vocab", "passcode"].map((k) => store.get(k)));
+    if (pass) passcode = pass;
+    if (loc === "es-ES" || loc === "es-MX") setLocale(loc, false);
+    if (voice) state.voiceName = voice;
+    if (rate && !isNaN(Number(rate))) { state.rate = Number(rate); $("rate").value = rate; $("rateVal").textContent = state.rate.toFixed(2); }
+    if (topic && TOPICS[topic]) $("topic").value = topic;
+    if (vocab) $("vocab").value = vocab;
+
+    if (!synth) {
+      $("voiceSel").innerHTML = "<option>Speech isn't supported in this browser</option>";
+      $("testBtn").disabled = true;
+    } else {
+      loadVoices();
+      synth.addEventListener ? synth.addEventListener("voiceschanged", loadVoices) : (synth.onvoiceschanged = loadVoices);
+      // Safari sometimes never fires voiceschanged, so check a few more times.
+      let tries = 0;
+      const poll = setInterval(() => { if (voices.length || ++tries > 20) { clearInterval(poll); if (!voices.length) $("voiceSel").innerHTML = "<option>No Spanish voice installed</option>"; } else loadVoices(); }, 250);
+    }
+    if (!SR) blockMic("Speech recognition isn't available in this browser. Type below instead, or try Chrome or Safari.");
+  })();
+})();
+</script>
+</body>
+</html>
