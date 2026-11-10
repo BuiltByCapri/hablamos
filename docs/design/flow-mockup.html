@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hablamos: new flow</title>
+<!-- Proposed flow, 2026-10-29: Today home, envelope inbox, first-run welcome, tutor
+     students list and student page, bottom tabs. Not yet approved for the build. -->
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Caveat:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--desk:#2D3B36;--ground:#E9E2D2;--paper:#F6F0E3;--card:#FFFEFA;--ink:#22201C;--blue:#24427A;--red:#A8322B;--green:#3F6B4F;--muted:#6B6454;--rule:rgba(36,66,122,.18);--wax:#9B2B27}
+*{box-sizing:border-box}
+body{margin:0;background:var(--desk);font:400 16px/1.45 "Newsreader",Georgia,serif;color:var(--ink);display:flex;gap:36px;justify-content:center;flex-wrap:wrap;padding:40px 16px}
+.label{color:#DCE5DF;font:500 12px "IBM Plex Mono";letter-spacing:.12em;text-transform:uppercase;text-align:center;margin-bottom:10px}
+.phone{width:390px;height:844px;background:var(--ground);border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.scroll{flex:1;overflow:hidden;padding-bottom:12px}
+.mono{font:400 11.5px/1.4 "IBM Plex Mono";letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.hand{font:500 24px/1.15 "Caveat";color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:center;padding:20px 22px 6px}
+.brand{font:600 22px "Newsreader";font-style:italic}
+.me{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#c9a98b,#8a6a55);border:2px solid var(--card);box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.tabs{display:flex;justify-content:space-around;border-top:1px solid rgba(0,0,0,.1);background:var(--paper);padding:10px 6px 22px}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;font:400 10.5px "IBM Plex Mono";letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6}
+.tab.on{color:var(--blue)}
+.tab .dot{position:relative}
+.tab .dot::after{content:"";position:absolute;top:-2px;right:-4px;width:8px;height:8px;border-radius:50%;background:var(--red)}
+.hello{padding:4px 22px 0}
+.hello h1{font:600 30px/1.1 "Newsreader";margin:4px 0 2px}
+.hello p{margin:0;color:var(--muted)}
+.today{margin:16px 14px 0;background:var(--card);border-radius:6px;box-shadow:0 10px 24px -14px rgba(0,0,0,.45),0 1px 0 rgba(0,0,0,.05);padding:18px 18px 16px}
+.counts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:10px 0 14px}
+.count{border:1px solid rgba(0,0,0,.08);border-radius:4px;padding:10px 8px;text-align:center;background:var(--paper)}
+.count b{display:block;font:600 30px/1 "Newsreader"}
+.count span{font:400 10px "IBM Plex Mono";letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.count.new b{color:var(--red)} .count.rev b{color:var(--blue)}
+.go{display:flex;justify-content:center;align-items:center;gap:8px;width:100%;padding:15px;background:var(--blue);color:var(--paper);border:0;border-radius:4px;font:600 17px "Newsreader";font-style:italic}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 14px 0}
+.mini{background:var(--card);border-radius:6px;box-shadow:0 8px 20px -14px rgba(0,0,0,.45);padding:14px}
+.mini b{display:block;font:600 18px "Newsreader";margin:4px 0 2px}
+.mini small{color:var(--muted);font-size:13px}
+.phoneicon{width:30px;height:30px;border-radius:50%;background:var(--blue);display:grid;place-items:center}
+.week{display:flex;gap:6px;margin-top:8px}
+.week i{flex:1;height:26px;border-radius:3px;background:rgba(36,66,122,.08)}
+.week i.d{background:rgba(36,66,122,.55)} .week i.h{background:rgba(36,66,122,.28)}
+.envelope{margin:14px 14px 0;height:132px;position:relative;background:#F1E7D2;border-radius:4px;box-shadow:0 10px 24px -14px rgba(0,0,0,.5);overflow:hidden}
+.envelope .flap{position:absolute;left:0;right:0;top:0;height:70px;background:#EADCC2;clip-path:polygon(0 0,100% 0,50% 100%)}
+.seal{position:absolute;left:50%;top:52px;transform:translateX(-50%);width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#c2443d,var(--wax) 60%,#7a1f1c);box-shadow:0 2px 4px rgba(0,0,0,.3);display:grid;place-items:center;color:#f3d9c9;font:600 16px "Newsreader";font-style:italic}
+.stamp{position:absolute;right:12px;top:10px;width:44px;height:52px;background:linear-gradient(160deg,#a9c3d6,#5e7f9a 60%,#e8c7a0);border:3px solid var(--card);outline:1px dashed rgba(0,0,0,.25)}
+.envelope .to{position:absolute;left:18px;bottom:14px}
+.envelope .to .hand{font-size:22px}
+.tip{margin:10px 22px 0;display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--muted)}
+.tip b{color:var(--ink);font-weight:600}
+.tip .i{flex:none;width:20px;height:20px;border-radius:50%;border:1.3px solid var(--muted);display:grid;place-items:center;font:500 11px "IBM Plex Mono";margin-top:1px}
+.welcome{padding:30px 26px 0;text-align:center}
+.welcome h1{font:600 34px/1.05 "Newsreader";margin:18px 0 10px}
+.welcome p{color:var(--muted);margin:0 0 6px}
+.steps{margin:26px 18px 0;display:grid;gap:10px}
+.step{display:flex;gap:14px;align-items:flex-start;background:var(--card);border-radius:6px;padding:14px;box-shadow:0 8px 20px -14px rgba(0,0,0,.45);text-align:left}
+.step .n{flex:none;width:30px;height:30px;border-radius:50%;background:var(--paper);border:1.3px solid var(--ink);display:grid;place-items:center;font:600 15px "Newsreader"}
+.step b{display:block;font:600 17px "Newsreader"}
+.step small{color:var(--muted);font-size:14px}
+.dots{display:flex;gap:6px;justify-content:center;margin:18px 0 0}
+.dots i{width:7px;height:7px;border-radius:50%;background:rgba(0,0,0,.18)} .dots i.on{background:var(--blue);width:20px;border-radius:4px}
+.cta{margin:18px 18px 0}
+.inbox{padding:4px 14px 0;display:grid;gap:10px}
+.mail{display:grid;grid-template-columns:58px 1fr auto;gap:12px;align-items:center;background:var(--card);border-radius:5px;padding:12px;box-shadow:0 8px 20px -14px rgba(0,0,0,.45)}
+.mail .env{width:58px;height:42px;background:#F1E7D2;border-radius:2px;position:relative;overflow:hidden}
+.mail .env::before{content:"";position:absolute;left:0;right:0;top:0;height:24px;background:#E4D4B6;clip-path:polygon(0 0,100% 0,50% 100%)}
+.mail .env .s{position:absolute;left:50%;top:15px;transform:translateX(-50%);width:15px;height:15px;border-radius:50%;background:var(--wax)}
+.mail.read .env::before{clip-path:polygon(0 100%,100% 100%,50% 0);top:-18px;background:#E9DEC8} .mail.read .env .s{display:none}
+.mail b{font:600 16px "Newsreader";display:block}
+.mail small{color:var(--muted);font-size:13px}
+.mail .d{font:400 11px "IBM Plex Mono";color:var(--muted);text-align:right}
+.mail.unread b::after{content:" · new";font:500 10px "IBM Plex Mono";color:var(--red);letter-spacing:.06em;text-transform:uppercase}
+.filters{display:flex;gap:8px;padding:10px 14px 12px;overflow:hidden}
+.chip{font:400 12px "IBM Plex Mono";padding:6px 11px;border-radius:14px;border:1px solid rgba(0,0,0,.15);white-space:nowrap;color:var(--muted)}
+.chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+h2.page{font:600 28px "Newsreader";margin:2px 22px 0}
+.student{display:grid;grid-template-columns:52px 1fr;gap:12px;background:var(--card);border-radius:6px;padding:14px;box-shadow:0 8px 20px -14px rgba(0,0,0,.45)}
+.student .p{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#d8b49a,#7c5b47)}
+.student .p.b{background:linear-gradient(135deg,#b7c6a6,#55704f)}
+.student b{font:600 18px "Newsreader"} .student b small{font:400 12px "IBM Plex Mono";color:var(--muted);margin-left:6px}
+.student .meta{font-size:13.5px;color:var(--muted)}
+.student .flag{margin-top:6px;font:500 20px/1.1 "Caveat";color:var(--red)}
+.big{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 14px 0;padding:17px;background:var(--blue);color:var(--paper);border-radius:4px;font:600 18px "Newsreader";font-style:italic}
+.guide{margin:12px 14px 0;background:#FFF8E6;border:1px dashed #C9A85A;border-radius:6px;padding:12px 14px;font-size:14px}
+.guide b{font-weight:600}
+.guide .hand{font-size:21px;color:var(--red)}
+.list{margin:14px 14px 0;background:var(--card);border-radius:6px;padding:4px 14px;box-shadow:0 8px 20px -14px rgba(0,0,0,.45)}
+.list div{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.07);font-size:15px}
+.list div:last-child{border:0}
+.list span{font:400 12px "IBM Plex Mono";color:var(--muted)}
+.pattern{padding:10px 0;border-bottom:1px solid rgba(0,0,0,.07)}
+.pattern:last-child{border:0}
+.pattern b{font:600 16px "Newsreader"} .pattern b span{font:400 11px "IBM Plex Mono";color:var(--red);margin-left:6px}
+.pattern p{margin:2px 0 0;font-size:15px} .pattern s{text-decoration-color:var(--red);text-decoration-thickness:2px} .pattern em{font:700 19px "Caveat";color:var(--red);font-style:normal}
+</style></head><body>
+
+<div><div class="label">Student · first open</div>
+<div class="phone"><div class="scroll">
+  <div class="welcome">
+    <svg width="96" height="70" viewBox="0 0 96 70"><rect x="4" y="10" width="88" height="56" rx="3" fill="#F1E7D2" stroke="#22201C" stroke-width="1.4"/><path d="M4 12 48 42 92 12" fill="none" stroke="#22201C" stroke-width="1.4"/><circle cx="48" cy="40" r="9" fill="#9B2B27"/></svg>
+    <h1>Bienvenida a Hablamos</h1>
+    <p>Your lessons, kept and practiced between classes.</p>
+  </div>
+  <div class="steps">
+    <div class="step"><span class="n">1</span><div><b>Your tutor sends letters</b><small>After each class, the new words and grammar arrive as a letter. Nothing to type.</small></div></div>
+    <div class="step"><span class="n">2</span><div><b>Practice a few minutes a day</b><small>Index cards, quizzes, and a practice call to say it all out loud.</small></div></div>
+    <div class="step"><span class="n">3</span><div><b>Your tutor sees what to work on</b><small>What you know and what keeps tripping you up. Never your private notes.</small></div></div>
+  </div>
+  <div class="dots"><i class="on"></i><i></i><i></i></div>
+  <div class="cta"><div class="go">Get started</div></div>
+</div></div></div>
+
+<div><div class="label">Student · Today (new home)</div>
+<div class="phone"><div class="scroll">
+  <div class="top"><div class="brand">Hablamos</div><div class="me"></div></div>
+  <div class="hello"><span class="mono">Thursday, Oct 29</span><h1>Hola, Capri</h1><p>About 10 minutes of practice waiting for you.</p></div>
+  <div class="today">
+    <span class="mono">Today</span>
+    <div class="counts">
+      <div class="count new"><b>4</b><span>New</span></div>
+      <div class="count rev"><b>3</b><span>To revisit</span></div>
+      <div class="count"><b>12</b><span>Known</span></div>
+    </div>
+    <div class="go">Practice 7 cards</div>
+  </div>
+  <div class="row2">
+    <div class="mini"><div class="phoneicon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F6F0E3" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg></div><b>Call Ana</b><small>5 minutes using this week's lesson</small></div>
+    <div class="mini"><span class="mono">This week</span><div class="week"><i class="d"></i><i class="h"></i><i></i><i class="d"></i><i class="d"></i><i></i><i></i></div><small style="display:block;margin-top:8px">3 days · 41 min</small></div>
+  </div>
+  <div class="envelope"><div class="flap"></div><div class="seal">D</div><div class="stamp"></div><div class="to"><span class="mono">New letter · Oct 28</span><div class="hand">From Daniel · tap to open</div></div></div>
+</div>
+<div class="tabs">
+  <div class="tab on"><svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7v9H3z"/></svg>Today</div>
+  <div class="tab"><span class="dot"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="1"/><path d="m3 7 9 7 9-7"/></svg></span>Letters</div>
+  <div class="tab"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="12" rx="1"/><path d="M4 9h16"/></svg>Practice</div>
+  <div class="tab"><svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>Call</div>
+  <div class="tab"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add</div>
+</div></div></div>
+
+<div><div class="label">Student · Letters</div>
+<div class="phone"><div class="scroll">
+  <div class="top"><div class="brand">Hablamos</div><div class="me"></div></div>
+  <h2 class="page">Letters</h2>
+  <div class="tip"><span class="i">i</span><span><b>Every lesson lands here.</b> Sealed means new. Open one to see what's inside, then practice it.</span></div>
+  <div class="filters"><span class="chip on">All</span><span class="chip">Cooking</span><span class="chip">Travel</span><span class="chip">Grammar</span><span class="chip">Mine</span></div>
+  <div class="inbox">
+    <div class="mail unread"><div class="env"><i class="s"></i></div><div><b>Tuesday's lesson</b><small>From Daniel · 3 words · 1 grammar point</small></div><div class="d">Oct 28</div></div>
+    <div class="mail read"><div class="env"><i class="s"></i></div><div><b>Monday's lesson</b><small>From Daniel · 5 words · 1 phrase</small></div><div class="d">Oct 27</div></div>
+    <div class="mail read"><div class="env"><i class="s"></i></div><div><b>Your own notes</b><small>From a photo · 4 words · 1 phrase</small></div><div class="d">Oct 25</div></div>
+    <div class="mail read"><div class="env"><i class="s"></i></div><div><b>Wednesday's lesson</b><small>From Daniel · 7 words · 2 grammar points</small></div><div class="d">Oct 22</div></div>
+  </div>
+</div>
+<div class="tabs">
+  <div class="tab"><svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7v9H3z"/></svg>Today</div>
+  <div class="tab on"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="1"/><path d="m3 7 9 7 9-7"/></svg>Letters</div>
+  <div class="tab"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="12" rx="1"/><path d="M4 9h16"/></svg>Practice</div>
+  <div class="tab"><svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>Call</div>
+  <div class="tab"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add</div>
+</div></div></div>
+
+<div><div class="label">Tutor · Students</div>
+<div class="phone"><div class="scroll">
+  <div class="top"><div class="brand">Hablamos</div><div class="me" style="background:linear-gradient(135deg,#a9c3d6,#5e7f9a)"></div></div>
+  <h2 class="page">Your students</h2>
+  <div class="guide"><b>New here?</b> Send your first lesson in three steps: upload your notes or a photo of the board, check what it found, press Send. <span class="hand">Try it with a sample</span></div>
+  <div class="inbox" style="margin-top:12px">
+    <div class="student"><div class="p"></div><div><b>Capri <small>she/her</small></b><div class="meta">Studied today · 3 days this week</div><div class="flag">Keeps mixing up ser and estar</div></div></div>
+    <div class="student"><div class="p b"></div><div><b>Jordan <small>he/him</small></b><div class="meta">Last studied Monday · 1 day this week</div><div class="flag" style="color:var(--green)">Knows last lesson's material</div></div></div>
+  </div>
+  <div class="tip" style="margin-top:14px"><span class="i">+</span><span><b>Invite a student</b> by email. They get a link to join and your lessons start arriving for them.</span></div>
+</div>
+<div class="tabs">
+  <div class="tab on"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-4 3.4-6 6.5-6s5.7 2 6.5 6M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2 .7 3.2 2.6 3.5 6"/></svg>Students</div>
+  <div class="tab"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Send</div>
+  <div class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Profile</div>
+</div></div></div>
+
+<div><div class="label">Tutor · one student</div>
+<div class="phone"><div class="scroll">
+  <div class="top"><span class="mono">Students</span><div class="me"></div></div>
+  <div class="hello"><h1 style="font-size:28px">Capri</h1><p>she/her · Spanish, Mexico · beginner</p></div>
+  <div class="big">Send a lesson to Capri</div>
+  <div class="list">
+    <div><b style="font-weight:600">Next lesson, worth a look</b></div>
+    <div class="pattern"><b>ser vs estar <span>4 times</span></b><p><s>Soy</s> <em>estoy</em> cansada.</p></div>
+    <div class="pattern"><b>dropping articles <span>2 times</span></b><p>Voy a <em>la</em> estación.</p></div>
+  </div>
+  <div class="list">
+    <div>This week<span>3 days · 41 min</span></div>
+    <div>Knows well<span>la cebolla, el andén, +10</span></div>
+    <div>Keeps missing<span>tener hambre, el ajo</span></div>
+  </div>
+  <div class="tip"><span class="i">i</span><span>From her practice cards, quizzes and calls. Her private notes are never shown here.</span></div>
+</div>
+<div class="tabs">
+  <div class="tab on"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-4 3.4-6 6.5-6s5.7 2 6.5 6M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2 .7 3.2 2.6 3.5 6"/></svg>Students</div>
+  <div class="tab"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Send</div>
+  <div class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Profile</div>
+</div></div></div>
+
+</body></html>

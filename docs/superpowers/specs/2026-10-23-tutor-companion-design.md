@@ -9,7 +9,7 @@ study. This version fixes both. The tutor uploads what they already have from a 
 sorts it into the student's study material, and progress is recorded only when the student
 actually studies.
 
-**Hablamos is student-centred, lesson-fed and tutor-supported.** The student's learning history
+**Hablamos is student-centered, lesson-fed and tutor-supported.** The student's learning history
 persists independently of any particular tutor. Tutor contributions enrich that history rather
 than own it: what a tutor publishes belongs to the student, survives unlinking, and survives the
 tutor deleting their own account, with the tutor still named as its source where they can be.
@@ -73,6 +73,23 @@ restructured entirely.
   workflow, with no tutor review step since there is no tutor.
 - The shared `APP_PASSCODE` goes away; the Claude endpoint requires a signed-in user.
 - No data is global except reference content (alphabet, conjugator rules).
+
+## Profile
+
+Hers, 2026-10-29. Every account, student or tutor, has a profile page, separate from settings.
+
+- **Name**, as others see it.
+- **Pronouns**, optional and free text. A linked tutor sees the student's on the student list, and
+  the student sees the tutor's.
+- **How to be greeted in the target language.** For Spanish: Querida, Querido, Queride, or just the
+  name. Asked directly rather than derived from pronouns, because pronouns do not map neatly onto
+  grammatical gender. Until it is set, letters open "Hola {name},". It is per language, so a later
+  language asks again.
+- **Photo**, optional. Kept in private storage: readable only by the owner and the people linked to
+  them, removed when the account is deleted.
+- **Where photos appear.** The tutor's photo is the postage stamp on each of their letters, beside
+  the postmark. The student's photo appears on the tutor's student list and at the top of the
+  tutor's page for that student.
 
 ## Language
 
@@ -157,7 +174,7 @@ Capri's existing vocab, lessons and settings come across. Hers, 2026-10-23.
   have not been studied yet. Each item keeps its own studied status: a tutor editing the lesson
   or an item afterwards, or changing the lesson's date, never makes a studied item new again.
 - Their material by topic.
-- Flashcards (words and phrases) and personalised voice practice. Voice practice draws its words,
+- Flashcards (words and phrases) and personalized voice practice. Voice practice draws its words,
   phrases and grammar from the student's own material rather than a pasted list or fixed topics.
 - Reference tools carried over from the planner: alphabet, verb conjugator, pronunciation guide,
   dictionary lookup.
@@ -170,9 +187,16 @@ Capri's existing vocab, lessons and settings come across. Hers, 2026-10-23.
 Per student:
 
 - Which study sessions were completed and when.
-- Topics and items practised.
+- Topics and items practiced.
 - Items consistently right versus frequently missed.
-- A concise summary of what may need attention at the next lesson.
+- **Patterns from speaking.** Hers, 2026-10-28, from what Daniel, her tutor, asked for. Voice
+  practice already corrects the student as she speaks. Those corrections are grouped into
+  recurring patterns, such as mixing up ser and estar or dropping articles, and the tutor sees
+  which come up most, how often, and one recent example of what was said and the fix. This shows
+  what the student struggles with when speaking, which right-versus-missed on items cannot, since
+  most speaking mistakes are not tied to any one item.
+- A concise summary of what may need attention at the next lesson, drawing on the speaking
+  patterns as well as the items.
 
 Not shown: per-click activity, the student's private notes.
 
@@ -180,8 +204,8 @@ Not shown: per-click activity, the student's private notes.
 
 - With several tutors, each sees the same tutor view for that student, and each publish names the
   tutor it came from.
-- A **session** and the **items practised in it** are stored separately. The session holds mode,
-  start, duration and whether it qualifies. Each item practised gets its own record with an
+- A **session** and the **items practiced in it** are stored separately. The session holds mode,
+  start, duration and whether it qualifies. Each item practiced gets its own record with an
   outcome: right or missed where that is known, otherwise "came up".
 - Flashcards record right or missed per item, by the student's own answer. A flashcard run
   qualifies once one card is answered.
@@ -190,6 +214,10 @@ Not shown: per-click activity, the student's private notes.
   Claude can tell from what the student said. **"Came up" is its own outcome**, never counted as
   right or missed, so uncertain results do not distort progress. Claude's reply tool gains fields for this alongside
   `reply_es`, `reply_en` and `correction`.
+- **Speaking mistakes are recorded by pattern.** When a voice correction is a real error rather
+  than a style suggestion, Claude names its pattern, reusing one of the student's existing
+  patterns before naming a new one, the same way topics are matched. Each mistake keeps what the
+  student said and the fix. Patterns belong to the student, like everything else.
 - "Words to revisit" are items missed recently or repeatedly.
 - Opening the app without studying is not a session.
 
@@ -205,7 +233,7 @@ Separately, the student gets a notice when their tutor publishes new material. E
 
 - **Quiet hours:** 21:00 to 08:00 in the student's time zone by default, changeable by the student.
   Nothing is sent inside them: a notice or nudge that falls due then waits until they end. A daily
-  nudge time the student picks inside quiet hours is honoured, since they chose it.
+  nudge time the student picks inside quiet hours is honored, since they chose it.
 - **No duplicates:** at most one nudge per student per day, and one notice per publish. These
   limits are enforced by the database, not only by the hourly job, so a retried or overlapping
   check can never send twice.
@@ -231,6 +259,8 @@ Separately, the student gets a notice when their tutor publishes new material. E
   fingerprint of the content plus the extraction version (prompt and model). An identical upload
   reuses the result; changed content, or a new extraction version, is processed again.
 - **Deleting:** a student can delete their account and all their data.
+- **Speaking patterns on the tutor page:** the top five patterns from the last 30 days, each with
+  its count and its most recent example. Counts, not a transcript.
 - **The hard-coded profile becomes per-student settings:** level and current focus, editable by
   the student and any linked tutor. Each shows who last changed it and when. The voice prompt
   reads them.
@@ -242,4 +272,86 @@ Separately, the student gets a notice when their tutor publishes new material. E
 - The email sender and how reminders are scheduled.
 - The scoring rule behind "words to revisit" and right-versus-missed.
 - How the tutor's next-lesson summary is generated.
-- Visual design. The current voice app's look is a starting point, not a constraint.
+- Details of the visual design within the direction below.
+
+## Quizzes
+
+Hers, 2026-10-29. Flashcards only test recognition, graded by the student. A quiz checks her.
+
+- **One quiz, two uses.** Practice: a quick mixed quiz any time, score shown but not the point.
+  Prepare: "am I ready for the next lesson", covering the latest letter plus what she keeps
+  missing, ending in a score and a list of what to look at again.
+- **Question types, mixed:** type the answer (accents count); fill the gap in the tutor's own
+  example sentence; pick one of four; grammar questions built from the tutor's grammar points
+  ("soy or estoy cansada?"); either direction, target language to English or back; and
+  **conjugate**: a person, a verb and a tense ("nosotros + vivir, present"), checked against the
+  conjugator, limited to the verbs and tenses the tutor has taught. Grammar points get practiced
+  here, since they are not flashcards.
+- **Agreement counts.** Where the answer changes with who is described, the question names them
+  ("Ana is from Mexico: Ana es ___"), and only the agreeing form is right (mexicana, not
+  mexicano).
+- **She chooses** what it covers (a letter, a topic, what she keeps missing) and how long.
+- **Every answer is a result** like a flashcard answer, right or missed, so misses come back and the
+  tutor's view reflects them.
+- Lives in Practice as Cards or Quiz, and on Today as "Quiz me on Tuesday's lesson".
+
+## Homework
+
+Hers, 2026-10-29. Her tutor sets homework regularly.
+
+- **The tutor sets homework on what it is about,** not only on one letter: a letter, one or more
+  topics, and skills such as verbs in a tense. Her real week, 2026-10-29: nationalities, countries
+  and practicing verbs. It is a quiz built from those, a note in the tutor's own words ("write five
+  sentences in the past tense"), or both, with an optional due date.
+- **She can redo it as practice** as often as she likes before it is due; the tutor sees her best
+  and latest attempt.
+- **The student sees it on Today** ("Homework from Daniel, due Tuesday") and in the letter.
+- **The tutor sees** whether it was done, and the quiz score and misses when there was a quiz.
+- **Later, not v1: homework help.** A helper the student can ask while working ("why estoy here?")
+  that explains and gives hints but does not hand over answers, since the tutor grades the work.
+
+## Open: the product name
+
+Hers, 2026-10-29. "Hablamos" fits Spanish only, from when this was a personal tool, and the product
+is meant to be sold to tutors of any language, so it will be renamed before launch. No rush.
+
+- **The shape she wants:** something like "Noted.", one word with a period. Noted itself is taken.
+- **What it should name:** the product, not the interface. The letters and calls are UI; the
+  product keeps what a student covered with their tutor alive between lessons. So names built on
+  letters (Lettered, Penned, Sealed, Postmark, Penfriend, Inkwell) are out.
+- **Raised and declined:** Between, Versed, Spoken, Covered, Kept, Retained, Prepped, Recalled.
+- The name sets the domain (currently hablamos.builtbycapri.com) and the welcome line. Nothing in
+  the code depends on it yet.
+
+## Copy rule: items are not all words
+
+A lesson holds words, phrases and grammar points. Counts name each kind ("3 words · 1 grammar
+point") or use a neutral noun ("4 new", "5 things to learn"). Never "words" for a mixed set.
+
+## Visual direction: correspondence
+
+Hers, 2026-10-29, chosen from three mockups (lotería, correspondence, on air). The first styled
+pass, the voice app's green and gold on rounded cards, read as machine-made, and she does not want
+it to look like every other study app. Research is in `docs/research/2026-10-29-language-app-formats.md`.
+
+Hablamos means "we talk", so the app is an exchange between the student and the tutor.
+
+- **A lesson arrives as a letter.** Dated and postmarked, with the tutor's photo as the stamp,
+  opening with the greeting the student chose in their profile ("Querida Capri,"), the words
+  listed inside, each with its meaning and the tutor's example sentence, signed by the tutor. A P.S.
+  carries what may need attention, drawn from the speaking patterns. Earlier lessons are earlier
+  letters.
+- **Practice is on ruled paper.** Text sits on the lines. The student's answer is in a handwritten
+  blue ink.
+- **Speaking practice is a phone call.** Hers, 2026-10-29: letters are the written side, a call is
+  the spoken side. The practice partner has a name, one Capri will make up; the mockup uses Ana as
+  a stand-in. Before the
+  call: the name, the language and accent, a rotary-dial call button, and what she'll bring up
+  from the latest lesson. On the call: a timer, voice lines in blue ink that move while the partner speaks (large under
+  the name, small under the line being spoken), and the conversation written on ruled paper as it
+  happens, partner in print, student in handwriting, with a red-pen correction inline (wrong word
+  struck through, right one beside it, short margin note on why) and a small tick on lesson words
+  she used. Keys at the bottom: slower, tap to talk (tap again to send, as the voice app works today), hang up.
+- Type: Newsreader for text, Caveat for handwriting, IBM Plex Mono for dates and labels. Paper
+  `#F6F0E3`, ink `#22201C`, blue ink `#24427A`, red pen `#A8322B`.
+- The approved mockup is `docs/design/correspondence-mockup.html`; open it in a browser.

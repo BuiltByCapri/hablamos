@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hablamos: Correspondence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Caveat:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--desk:#2D3B36;--paper:#F6F0E3;--ink:#22201C;--blue:#24427A;--red:#A8322B;--green:#3F6B4F;--muted:#77705F;--rule:rgba(36,66,122,.18)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--desk);font:400 16px/1.5 "Newsreader",Georgia,serif;color:var(--ink);display:flex;gap:40px;justify-content:center;flex-wrap:wrap;padding:40px 16px}
+.label{color:#DCE5DF;font:500 12px "IBM Plex Mono";letter-spacing:.12em;text-transform:uppercase;text-align:center;margin-bottom:10px}
+.phone{width:390px;min-height:844px;background:#E9E2D2;border-radius:28px;overflow:hidden;padding-bottom:24px}
+.bar{display:flex;justify-content:space-between;align-items:center;padding:20px 22px 12px}
+.brand{font:600 22px "Newsreader";font-style:italic}
+.nav{font:400 12px "IBM Plex Mono";color:var(--muted);display:flex;gap:12px}
+.nav b{color:var(--ink);font-weight:500}
+.sheet{margin:6px 14px 0;background-color:var(--paper);box-shadow:0 1px 0 rgba(0,0,0,.08),0 10px 24px -14px rgba(0,0,0,.45)}
+.ruled{--row:32px;padding:0 22px 32px;background-image:linear-gradient(transparent calc(var(--row) - 1px),var(--rule) calc(var(--row) - 1px));background-size:100% var(--row);background-position:0 20px}
+.ruled > *{margin:0}
+.mono{font:400 12px/32px "IBM Plex Mono";color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.hand{font:500 25px/32px "Caveat";color:var(--blue)}
+.redpen{font:700 25px/32px "Caveat";color:var(--red)}
+s{text-decoration-color:var(--red);text-decoration-thickness:2px}
+.letter{padding:22px 22px 20px;position:relative;transform:rotate(-.4deg)}
+.post{position:absolute;top:14px;right:16px;width:78px;height:78px;border:1.5px solid rgba(168,50,43,.55);border-radius:50%;display:grid;place-items:center;text-align:center;color:rgba(168,50,43,.75);font:500 9.5px/1.25 "IBM Plex Mono";letter-spacing:.08em;transform:rotate(12deg)}
+.from{font:400 12px "IBM Plex Mono";color:var(--muted);letter-spacing:.04em;padding-right:84px}
+.dear{font:500 30px/1 "Caveat";color:var(--blue);margin:16px 0 6px}
+.letter p{margin:0 0 14px}
+.words{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+.words li{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:9px 0;border-bottom:1px solid var(--rule)}
+.words .es{font:600 18px "Newsreader"}
+.words .en{font-style:italic;color:var(--muted);text-align:right}
+.words .ex{grid-column:1/-1;font-size:14px;color:var(--muted)}
+.words .k{font:400 10.5px "IBM Plex Mono";letter-spacing:.08em;text-transform:uppercase;color:var(--red);margin-left:6px;vertical-align:2px}
+.sign{font:700 30px/1 "Caveat";color:var(--blue);text-align:right;margin-top:14px}
+.ps{font-size:14px;margin-top:6px}
+.wide{display:block;margin:20px 14px 0;width:calc(100% - 28px);padding:15px;background:var(--blue);color:var(--paper);border:0;font:600 17px "Newsreader";font-style:italic}
+.list{margin:22px 22px 0}
+.list h3{font:500 11px "IBM Plex Mono";letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.list div{display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid rgba(0,0,0,.12);font-size:15px}
+.list span{font:400 12px "IBM Plex Mono";color:var(--muted)}
+.big{font:600 40px/64px "Newsreader";padding-top:32px}
+.ex2{font:italic 400 17px/32px "Newsreader";color:var(--muted)}
+.marks{display:flex;gap:12px;margin:18px 14px 0}
+.marks button{flex:1;padding:14px;border:1.5px solid var(--ink);background:var(--paper);font:600 16px "Newsreader"}
+.marks .ok{background:var(--ink);color:var(--paper)}
+.center{text-align:center}
+.caller{font:600 44px/1 "Newsreader";margin:30px 0 6px}
+.dial{width:140px;height:140px;margin:30px auto 0;border-radius:50%;border:2px solid var(--ink);position:relative;background:var(--paper);box-shadow:0 10px 24px -14px rgba(0,0,0,.5)}
+.dial i{position:absolute;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;border:1.5px solid var(--ink);background:#E9E2D2}
+.dial .rcv{position:absolute;inset:36px;border-radius:50%;background:var(--blue);display:grid;place-items:center}
+.brings{margin-top:30px;padding:10px 20px 16px}
+.calltop{text-align:center;padding:4px 22px 14px}
+.calltop .who{font:600 30px/1.1 "Newsreader"}
+.calltop .time{font:500 13px "IBM Plex Mono";color:var(--muted);letter-spacing:.08em}
+.calltop .time b{color:var(--green);font-weight:500}
+.say .who{display:block}
+.say .t{display:block;font:400 17px/32px "Newsreader"}
+.say.me .t{font:500 25px/32px "Caveat";color:var(--blue)}
+.say .note{display:block;font:700 20px/32px "Caveat";color:var(--red)}
+.say .used{display:block;font:400 11px/32px "IBM Plex Mono";color:var(--green)}
+.keys{display:flex;justify-content:space-around;align-items:center;margin:22px 26px 0}
+.key{display:flex;flex-direction:column;align-items:center;gap:6px;font:400 11px "IBM Plex Mono";letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.key .c{width:56px;height:56px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;background:var(--paper);font:600 15px "Newsreader"}
+.key .c.talk{width:78px;height:78px;background:var(--blue);border:0;color:var(--paper);font-style:italic}
+.key .c.end{background:var(--red);border:0}
+.wave{display:flex;align-items:center;justify-content:center;gap:3px;height:40px;margin:8px 0 2px}
+.wave i{display:block;width:3px;border-radius:2px;background:var(--blue);height:6px;animation:talk 1.1s ease-in-out infinite}
+.wave.small{justify-content:flex-start;height:20px;margin:0}
+.wave.small i{width:2px}
+@keyframes talk{0%,100%{height:5px}50%{height:var(--h,28px)}}
+.speaking{font:400 11px "IBM Plex Mono";color:var(--blue);letter-spacing:.08em;text-transform:uppercase}
+</style></head><body>
+
+<div><div class="label">Letters · home</div>
+<div class="phone">
+  <div class="bar"><div class="brand">Hablamos</div><div class="nav"><b>Letters</b><span>Practice</span><span>Call</span></div></div>
+  <div class="sheet letter">
+    <div class="post">DANIEL<br>OCT 28<br>2026</div>
+    <div class="from">From Daniel · Tuesday's lesson</div>
+    <div class="dear">Querida Capri,</div>
+    <p>Here's what we covered. Four new things for this week.</p>
+    <ul class="words">
+      <li><span class="es">la cebolla</span><span class="en">onion</span><span class="ex">Corta la cebolla en trozos pequeños.</span></li>
+      <li><span class="es">tener hambre<span class="k">phrase</span></span><span class="en">to be hungry</span><span class="ex">¿Tienes hambre? Vamos a comer.</span></li>
+      <li><span class="es">el andén</span><span class="en">platform</span><span class="ex">Te espero en el andén dos.</span></li>
+      <li><span class="es">pretérito indefinido<span class="k">grammar</span></span><span class="en">simple past</span></li>
+    </ul>
+    <div class="sign">Daniel</div>
+    <p class="ps"><b>P.S.</b> Watch ser and estar when you talk about how you feel.</p>
+  </div>
+  <button class="wide">Practice these</button>
+  <div class="list"><h3>Earlier letters</h3>
+    <div>Monday's lesson<span>Oct 27 · 6 words</span></div>
+    <div>Wednesday's lesson<span>Oct 22 · 9 words</span></div>
+  </div>
+</div></div>
+
+<div><div class="label">Letters · practicing</div>
+<div class="phone">
+  <div class="bar"><div class="brand">Hablamos</div><div class="nav"><span>Letters</span><b>Practice</b><span>Call</span></div></div>
+  <div class="sheet ruled">
+    <div class="mono" style="padding-top:32px">From Oct 28 · 3 of 12</div>
+    <div class="big">el andén</div>
+    <div class="ex2">Te espero en el ___ dos.</div>
+    <div class="hand" style="padding-top:32px;font-size:30px">platform (train)</div>
+  </div>
+  <div class="marks"><button>Not yet</button><button class="ok">I knew it</button></div>
+</div></div>
+
+<div><div class="label">Call · before</div>
+<div class="phone">
+  <div class="bar"><div class="brand">Hablamos</div><div class="nav"><span>Letters</span><span>Practice</span><b>Call</b></div></div>
+  <div class="center">
+    <div class="mono">Practice call</div>
+    <div class="caller">Ana</div>
+    <div class="mono">Speaks Spanish · Mexico</div>
+    <div class="dial" id="dial"><div class="rcv"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#F6F0E3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg></div></div>
+    <div class="mono" style="margin-top:12px">Tap to call</div>
+  </div>
+  <div class="sheet brings"><div class="mono">She'll bring up</div><div class="hand">la cebolla, tener hambre, el andén, and the simple past</div></div>
+  <div class="list"><h3>Earlier calls</h3>
+    <div>Monday<span>Oct 27 · 9 min</span></div>
+  </div>
+</div></div>
+
+<div><div class="label">Call · on the line</div>
+<div class="phone">
+  <div class="bar"><div class="brand">Hablamos</div><div class="nav"><span>Letters</span><span>Practice</span><b>Call</b></div></div>
+  <div class="calltop"><div class="who">Ana</div><div class="time"><b>●</b> On the call · 04:12</div><div class="wave" id="wave"></div><div class="speaking">Ana is speaking</div></div>
+  <div class="sheet ruled">
+    <div class="mono" style="padding-top:32px">What was said</div>
+    <div class="say"><span class="mono who">Ana</span><span class="t">¡Hola Capri! ¿Qué tal el viaje?</span></div>
+    <div class="say me"><span class="mono who">Tú</span><span class="t">Bien, pero <s>soy</s> <span class="redpen">estoy</span> muy cansada.</span><span class="note">↳ feelings take estar</span></div>
+    <div class="say"><span class="mono who">Ana</span><span class="t">Normal. ¿Y tienes hambre?</span></div>
+    <div class="say me"><span class="mono who">Tú</span><span class="t">¡Sí! Tengo mucha hambre.</span><span class="used">✓ tener hambre</span></div>
+    <div class="say"><span class="mono who">Ana</span><span class="t">¿Comemos algo con cebolla?</span><div class="wave small" id="wave2"></div></div>
+  </div>
+  <div class="keys">
+    <div class="key"><div class="c">½×</div>Slower</div>
+    <div class="key"><div class="c talk">Hablar</div>Tap to talk</div>
+    <div class="key"><div class="c end"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F6F0E3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(135deg)"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg></div>Hang up</div>
+  </div>
+</div></div>
+
+<script>
+const d=document.getElementById("dial");
+for(let i=0;i<10;i++){const a=-2.4+i*0.52,h=document.createElement("i");h.style.left=70+52*Math.cos(a)+"px";h.style.top=70+52*Math.sin(a)+"px";d.appendChild(h)}
+
+for (const [id,n,max] of [["wave",34,30],["wave2",22,16]]){const w=document.getElementById(id);
+for(let i=0;i<n;i++){const b=document.createElement("i");b.style.setProperty("--h",(6+Math.abs(Math.sin(i*1.7))*max)+"px");b.style.animationDelay=(i*0.07%1.1)+"s";w.appendChild(b)}}
+</script>
+</body></html>

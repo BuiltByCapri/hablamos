@@ -20,7 +20,7 @@
 - Spanish-only reference tools (alphabet, conjugator, pronunciation respelling) render only when the student's language is `es`.
 - A tutor never reads `notes`. A tutor reads nothing for a student without an `active` link.
 - Unlinking a tutor deletes no student data and changes no other tutor's access.
-- Student-centred: every student-owned row references the student with `on delete cascade` and any tutor with `on delete set null`. A tutor deleting their account removes none of a student's items, lessons, sessions or history. `lessons.publisher_name` and `items.created_by_name` snapshot the name so the source still shows.
+- Student-centered: every student-owned row references the student with `on delete cascade` and any tutor with `on delete set null`. A tutor deleting their account removes none of a student's items, lessons, sessions or history. `lessons.publisher_name` and `items.created_by_name` snapshot the name so the source still shows.
 - Every change to items, topics, lessons and level/focus writes a `change_log` row with actor, before and after. Items are soft-deleted (`deleted_at`), never hard-deleted except by account deletion.
 - "New" = items from the most recently **published** lesson (by `published_at`, never `lesson_date`) with no `session_results` row. Edits never reset it.
 - Quiet hours default 21:00 to 08:00 student-local. Nothing is emailed inside them except a daily nudge the student scheduled there.
@@ -81,7 +81,7 @@ lib/
   email.ts                             Resend wrapper
   spanish/pronounce.ts, conjugate.ts, alphabet.ts   ported from the planner
 components/                            one per screen piece, named after what it shows
-supabase/migrations/0001_schema.sql, 0002_rls.sql, 0003_cron.sql
+supabase/migrations/0001_schema.sql, 0002_rls.sql, ... 0006_publish.sql, 0007_speaking.sql, 0008_cron.sql
 tests/unit/*.test.ts                   Vitest, pure modules
 tests/rls/*.test.ts                    Vitest against a Supabase dev project
 tests/e2e/smoke.spec.ts                Playwright
@@ -103,6 +103,8 @@ Planner repo (`BuiltByCapri/hablamos-plan`): `index.html` gains the export butto
 | `items` | `id`, `student_id`, `topic_id`, `kind check in ('word','phrase','grammar')`, `text`, `meaning`, `example null`, `explanation null`, `created_by uuid`, `created_by_name text`, `created_by_role check in ('tutor','student')`, `last_edited_by uuid null`, `last_edited_at null`, `deleted_at null`, `lesson_id null`, `import_key text null`, `created_at`, unique (`student_id`, `import_key`) |
 | `sessions` | `id`, `student_id`, `mode check in ('flashcards','voice')`, `started_at`, `ended_at null`, `duration_s int null`, `counted bool default false` |
 | `session_results` | `session_id`, `item_id`, `outcome check in ('right','missed','came_up')`, `at timestamptz` |
+| `speaking_patterns` | `id`, `student_id`, `name`, `created_at`, unique (`student_id`, lower(`name`)). Added in Task 9 by `0007_speaking.sql`. |
+| `speaking_mistakes` | `id`, `student_id`, `session_id`, `pattern_id`, `said text`, `fix text`, `at timestamptz`. Added in Task 9. Student reads and writes their own; a linked tutor reads. |
 | `change_log` | `id`, `student_id`, `entity check in ('item','topic','lesson','profile')`, `entity_id`, `actor_id`, `action check in ('create','edit','remove','restore','rename','merge','unmerge')`, `before jsonb`, `after jsonb`, `at`. Append-only: no update or delete policy for anyone, and a trigger rejects updates. |
 | `notifications` | `id`, `student_id`, `kind check in ('publish','daily','quiet')`, `dedupe_key text unique`, `payload jsonb`, `send_after timestamptz`, `claimed_at null`, `sent_at null`. The unique key is the duplicate guard. A send claims a row with `update ... set claimed_at = now() where id = $1 and claimed_at is null returning *`, so two overlapping runs cannot both send it. |
 | `notes` | `id`, `student_id`, `body`, `created_at`, `updated_at` |
@@ -251,19 +253,38 @@ Flashcards include only `word` and `phrase` items, filterable by topic and "new"
 - [ ] **Step 4:** Run. Expected: PASS.
 - [ ] **Step 5:** Commit `study: sessions and flashcards`.
 
+### Task 8b: Profile: pronouns, greeting, photo
+
+Added 2026-10-29 (spec section "Profile"). Runs before Task 9.
+
+**Files:**
+- Create: `supabase/migrations/0011_profile.sql`, `app/profile/page.tsx`, `lib/profile.ts`, `components/Avatar.tsx`, `tests/unit/profile.test.ts`, `tests/rls/profile.test.ts`
+- Modify: `components/Letter.tsx` (stamp and greeting), the tutor student list and nav (Profile link), settings (name moves to Profile)
+
+**Interfaces:**
+- Schema: `profiles` gains `pronouns text null` (max 40), `greetings jsonb not null default '{}'` keyed by language code, e.g. `{"es": "querida"}` with values `querida | querido | queride | name`, and `photo_path text null`. A private storage bucket `avatars`, objects at `<user id>/<uuid>.webp`. Writes go through a definer RPC `update_profile(p_display_name, p_pronouns, p_greeting_lang, p_greeting)` that validates lengths and values; photo upload goes through a route that re-encodes to WebP (max 512px, under 1 MB) and sets `photo_path`, deleting the previous object.
+- Read policy: a user reads their own photo and any photo of someone they have an `active` link with, either direction. Account deletion removes the user's `avatars/<id>/` objects.
+- `greetingLine(profile: { display_name; greetings }, language: string): string`: `querida` gives "Querida {name},", `querido` "Querido {name},", `queride` "Queride {name},", `name` or unset "Hola {name},". Spanish only in v1; any other language returns "{name},".
+
+- [ ] **Step 1: Failing tests**: `greetingLine uses the chosen form`, `greetingLine falls back to Hola when unset`, `update_profile rejects a greeting outside the four values`, `pronouns over 40 characters are rejected`, and in `tests/rls/profile.test.ts`: `a linked tutor can read the student's photo and the student the tutor's`, `an unlinked user cannot read either photo`, `a user cannot overwrite another user's profile or photo`.
+- [ ] **Step 2:** Run. Expected: FAIL.
+- [ ] **Step 3:** Implement. Profile page in the correspondence style. The letter's postmark area shows the tutor's photo as a postage stamp (perforated edge) when they have one, otherwise the postmark alone.
+- [ ] **Step 4:** Run unit, RLS and tsc. Expected: PASS.
+- [ ] **Step 5:** Commit `profile: pronouns, greeting, and a photo that becomes the stamp`.
+
 ### Task 9: Voice practice on the student's own material
 
 **Files:**
-- Create: `lib/practice-prompt.ts`, `app/api/chat/route.ts`, `app/practice/page.tsx`, `components/VoicePractice.tsx`, `tests/unit/practice.test.ts`
+- Create: `lib/practice-prompt.ts`, `lib/speaking.ts`, `app/api/chat/route.ts`, `app/practice/page.tsx`, `components/VoicePractice.tsx`, `supabase/migrations/0007_speaking.sql`, `tests/unit/practice.test.ts`, `tests/unit/speaking.test.ts`, `tests/rls/speaking.test.ts`
 - Delete after this ships: `legacy/`
 
 **Interfaces:**
 - Consumes: `callClaude`, sessions API.
-- Produces: `buildPracticePrompt(profile: { language; accent; level; focus }, items: { id; kind; text; meaning; explanation }[]): string`. The reply tool keeps `reply_es`, `reply_en`, `correction` (renamed `reply_target`, `reply_en`, `correction`) and adds `items_came_up: string[]`, `items_right: string[]`, `items_missed: string[]` (item ids; right and missed only when the student's own words show it). `sanitizeItemIds(ids: string[], allowed: Set<string>): string[]`.
+- Produces: `buildPracticePrompt(profile: { language; accent; level; focus }, items: { id; kind; text; meaning; explanation }[], patterns: string[]): string`. The reply tool keeps `reply_es`, `reply_en`, `correction` (renamed `reply_target`, `reply_en`, `correction`) and adds `items_came_up: string[]`, `items_right: string[]`, `items_missed: string[]` (item ids; right and missed only when the student's own words show it), and `mistakes: { pattern: string; said: string; fix: string }[]` (real errors only, never style suggestions; empty when there were none). `sanitizeItemIds(ids: string[], allowed: Set<string>): string[]`. In `lib/speaking.ts`: `matchPattern(name: string, existing: { id; name }[]): string | null` returns the id of an existing pattern equal after lowercasing, trimming and collapsing whitespace and punctuation, else null.
 
-Port the voice UI from `legacy/index.html`: speech recognition, voice choice, rate, speaking, mic states. The topic picker becomes a choice of the student's topics plus "New since last lesson" and "To revisit". The pasted words box goes away. Each reply saves one result per id: `right` or `missed` where given, otherwise `came_up`. The session row stays separate and only records mode, timing and whether it counted.
+Port the voice UI from `legacy/index.html`: speech recognition, voice choice, rate, speaking, mic states. The topic picker becomes a choice of the student's topics plus "New since last lesson" and "To revisit". The pasted words box goes away. Each reply saves one result per id: `right` or `missed` where given, otherwise `came_up`. Each mistake is saved to `speaking_mistakes` under a matched pattern, creating the pattern only when `matchPattern` returns null. The prompt lists the student's existing pattern names and tells Claude to reuse one before naming a new one. The session row stays separate and only records mode, timing and whether it counted.
 
-- [ ] **Step 1: Failing tests**: `prompt names the student's language and accent and contains no hard-coded profile` (assert it does not contain "Monday" or "ser vs. estar" unless in focus), `prompt lists grammar items with their explanation as practice prompts`, `sanitizeItemIds drops ids not in the student's list` (Review Focus 3), `an id in both items_right and items_missed is saved as missed`.
+- [ ] **Step 1: Failing tests**: `prompt names the student's language and accent and contains no hard-coded profile` (assert it does not contain "Monday" or "ser vs. estar" unless in focus), `prompt lists grammar items with their explanation as practice prompts`, `prompt lists the student's existing speaking patterns`, `sanitizeItemIds drops ids not in the student's list` (Review Focus 3), `an id in both items_right and items_missed is saved as missed`, `matchPattern matches "Ser vs. estar" to "ser vs estar"`, `matchPattern returns null for a new pattern`, and in `tests/rls/speaking.test.ts`: `a linked tutor reads the student's mistakes`, `an unlinked tutor reads none`.
 - [ ] **Step 2:** Run. Expected: FAIL.
 - [ ] **Step 3:** Implement, then delete `legacy/`.
 - [ ] **Step 4:** Run. Expected: PASS. Hold one spoken conversation on a phone and check the session is counted with results.
@@ -275,11 +296,11 @@ Port the voice UI from `legacy/index.html`: speech recognition, voice choice, ra
 - Create: `lib/progress.ts`, `app/progress/page.tsx`, `app/tutor/[studentId]/page.tsx`, `tests/unit/progress.test.ts`
 
 **Interfaces:**
-- Produces: `itemStats(results: { itemId; outcome; at }[]): Map<string, { right: number; missed: number; cameUp: number; lastOutcome: string; lastAt: Date }>`. `toRevisit(stats, now: Date): string[]`: items missed at least twice in total, or missed in their most recent right-or-missed result, most recent first. `came_up` counts as practised but never as right. `consistentlyRight(stats): string[]`: at least 3 right and none missed in the last 3. `weekSummary(sessions, now)`: sessions and minutes in the last 7 days. `nextLessonSummary(args): Promise<string>` calls Claude with stats and topics only, never notes, for 3 to 5 short lines.
+- Produces: `itemStats(results: { itemId; outcome; at }[]): Map<string, { right: number; missed: number; cameUp: number; lastOutcome: string; lastAt: Date }>`. `toRevisit(stats, now: Date): string[]`: items missed at least twice in total, or missed in their most recent right-or-missed result, most recent first. `came_up` counts as practiced but never as right. `consistentlyRight(stats): string[]`: at least 3 right and none missed in the last 3. `weekSummary(sessions, now)`: sessions and minutes in the last 7 days. `topPatterns(mistakes: { patternId; patternName; said; fix; at }[], now: Date): { name; count; example: { said; fix } }[]`: the five most frequent patterns in the last 30 days, ties broken by most recent, each with its most recent example. `nextLessonSummary(args): Promise<string>` calls Claude with stats, topics and top patterns only, never notes, for 3 to 5 short lines.
 
-Student page: sessions with date, mode and minutes, minutes this week, words to revisit, and an encouraging line based on what they did, never on what they missed. No streak. Tutor page: sessions completed and when, topics and items practised, consistently right versus frequently missed, the next-lesson summary, a link to upload for this student. It shows per-session totals, not per-answer timestamps.
+Student page: sessions with date, mode and minutes, minutes this week, words to revisit, and an encouraging line based on what they did, never on what they missed. No streak. Tutor page: sessions completed and when, topics and items practiced, consistently right versus frequently missed, patterns from speaking (`topPatterns`), the next-lesson summary, a link to upload for this student. It shows per-session totals, not per-answer timestamps.
 
-- [ ] **Step 1: Failing tests**: `missed twice is to revisit`, `missed once then right twice is not`, `missed most recently is to revisit`, `3 right with no recent miss is consistently right`, `came_up alone is practised but neither right nor to revisit`, `came_up never changes a right or missed count`, `weekSummary ignores uncounted sessions`, `nextLessonSummary input contains no notes field` (assert on the built prompt).
+- [ ] **Step 1: Failing tests**: `missed twice is to revisit`, `missed once then right twice is not`, `missed most recently is to revisit`, `3 right with no recent miss is consistently right`, `came_up alone is practiced but neither right nor to revisit`, `came_up never changes a right or missed count`, `weekSummary ignores uncounted sessions`, `topPatterns keeps five, most frequent first`, `topPatterns ignores mistakes older than 30 days`, `topPatterns example is the most recent`, `nextLessonSummary input contains no notes field and includes the top patterns` (assert on the built prompt).
 - [ ] **Step 2:** Run. Expected: FAIL.
 - [ ] **Step 3:** Implement.
 - [ ] **Step 4:** Run. Expected: PASS.
@@ -288,11 +309,11 @@ Student page: sessions with date, mode and minutes, minutes this week, words to 
 ### Task 11: Reminders and settings
 
 **Files:**
-- Create: `lib/reminders.ts`, `app/api/cron/reminders/route.ts`, `supabase/migrations/0003_cron.sql`, `tests/unit/reminders.test.ts`
+- Create: `lib/reminders.ts`, `app/api/cron/reminders/route.ts`, `supabase/migrations/0008_cron.sql`, `tests/unit/reminders.test.ts`
 - Modify: `app/settings/page.tsx` (reminder mode, hour, quiet days, quiet hours, time zone)
 
 **Interfaces:**
-- Produces: `inQuietHours(profile, now): boolean` (handles windows that cross midnight). `nudgeFor(profile, lastCountedSessionAt: Date | null, now: Date): { kind: 'daily'|'quiet'; dedupeKey: string } | null`. Daily: local hour equals `reminder_hour`, key `daily:<student>:<local date>`. Quiet: no counted session for `reminder_quiet_days` days, not in quiet hours, key `quiet:<student>:<lastCountedSessionAt date>` so it is sent once per silence. Off: null. `GET /api/cron/reminders` requires `Authorization: Bearer ${CRON_SECRET}`, inserts due nudges into `notifications` with `on conflict (dedupe_key) do nothing`, sends every unsent notification whose `send_after` has passed and that is outside quiet hours (daily nudges exempt), marks `sent_at` in the same statement that claims it, and runs `closeIdle` from Task 8. `0003_cron.sql` schedules it hourly with `pg_cron` and `pg_net`.
+- Produces: `inQuietHours(profile, now): boolean` (handles windows that cross midnight). `nudgeFor(profile, lastCountedSessionAt: Date | null, now: Date): { kind: 'daily'|'quiet'; dedupeKey: string } | null`. Daily: local hour equals `reminder_hour`, key `daily:<student>:<local date>`. Quiet: no counted session for `reminder_quiet_days` days, not in quiet hours, key `quiet:<student>:<lastCountedSessionAt date>` so it is sent once per silence. Off: null. `GET /api/cron/reminders` requires `Authorization: Bearer ${CRON_SECRET}`, inserts due nudges into `notifications` with `on conflict (dedupe_key) do nothing`, sends every unsent notification whose `send_after` has passed and that is outside quiet hours (daily nudges exempt), marks `sent_at` in the same statement that claims it, and runs `closeIdle` from Task 8. `0008_cron.sql` schedules it hourly with `pg_cron` and `pg_net`.
 
 - [ ] **Step 1: Failing tests**: `daily at 19 in America/New_York is due at 23:00 UTC in EDT and 00:00 UTC in EST` (Review Focus 5), `daily has one dedupe key per local day`, `quiet 3 days is due on day 3 and not day 2`, `quiet keeps the same key until a new session happens`, `off is never due`, `inQuietHours is true at 23:00 and 07:00 and false at 08:00 for 21 to 8`, `a publish notice due at 22:00 waits until 08:00`, `running the cron twice in one hour sends each notification once`, and in `tests/rls/notifications.test.ts`: `inserting a second notification with the same dedupe_key fails`, `two concurrent claims of one notification: exactly one returns a row`, `cron rejects a missing or wrong secret`.
 - [ ] **Step 2:** Run. Expected: FAIL.
